@@ -12,7 +12,9 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_vpn/state.dart';
 
 import 'flutter_vpn_platform_interface.dart';
@@ -32,8 +34,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// Can only be listened once. If have more than one subscription, only the
   /// last subscription can receive events.
   @override
-  Stream<FlutterVpnState> get onStateChanged =>
-      eventChannel.receiveBroadcastStream().map((e) => FlutterVpnState.values[e]);
+  Stream<FlutterVpnState> get onStateChanged => eventChannel.receiveBroadcastStream().map((e) => FlutterVpnState.values[e]);
 
   /// Get current state.
   @override
@@ -65,7 +66,24 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   @override
   Future<bool> prepare() async {
     if (!Platform.isAndroid) return true;
-    return (await methodChannel.invokeMethod<bool>('prepare'))!;
+    if (await prepared) {
+      checkState();
+    }
+    var isPrepared = await methodChannel.invokeMethod<bool>('prepare') ?? false;
+    if (!isPrepared) {
+      _platformAlert();
+      return false;
+    }
+    return isPrepared;
+  }
+
+  Future<void> _platformAlert() async {
+    FlutterPlatformAlert.playAlertSound();
+    await FlutterPlatformAlert.showCustomAlert(
+      windowTitle: 'VPN Permission Instruction',
+      text: 'Please accept in order for the VPN to enable connection.',
+      positiveButtonTitle: "Enable VPN",
+    ).then((value) => prepare());
   }
 
   /// Check if vpn connection has been prepared. (Android only)
@@ -73,6 +91,10 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   Future<bool> get prepared async {
     if (!Platform.isAndroid) return true;
     return (await methodChannel.invokeMethod<bool>('prepared'))!;
+  }
+
+  Future<void> checkState() async {
+    await methodChannel.invokeMethod('checkState');
   }
 
   /// Disconnect and stop VPN service.
@@ -93,17 +115,21 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     String? name,
     int? mtu,
     int? port,
-  }) async =>
-      await methodChannel.invokeMethod('connect', {
-        'Type': 'IKEv2',
-        'Server': server,
-        'Username': username,
-        'Password': password,
-        'Secret': '',
-        'Name': name ?? server,
-        if (mtu != null) 'mtu': mtu,
-        if (port != null) 'port': port,
-      });
+  }) async {
+    if (Platform.isAndroid && !(await prepared)) {
+      prepare();
+    }
+    await methodChannel.invokeMethod('connect', {
+      'Type': 'IKEv2',
+      'Server': server,
+      'Username': username,
+      'Password': password,
+      'Secret': '',
+      'Name': name ?? server,
+      if (mtu != null) 'mtu': mtu,
+      if (port != null) 'port': port,
+    });
+  }
 
   /// Connect to VPN. (IPSec)
   ///
@@ -118,15 +144,19 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     String? name,
     int? mtu,
     int? port,
-  }) async =>
-      await methodChannel.invokeMethod('connect', {
-        'Type': 'IPSec',
-        'Server': server,
-        'Username': username,
-        'Password': password,
-        'Secret': secret,
-        'Name': name ?? server,
-        if (mtu != null) 'mtu': mtu,
-        if (port != null) 'port': port,
-      });
+  }) async {
+    if (Platform.isAndroid && !(await prepared)) {
+      prepare();
+    }
+    await methodChannel.invokeMethod('connect', {
+      'Type': 'IPSec',
+      'Server': server,
+      'Username': username,
+      'Password': password,
+      'Secret': secret,
+      'Name': name ?? server,
+      if (mtu != null) 'mtu': mtu,
+      if (port != null) 'port': port,
+    });
+  }
 }

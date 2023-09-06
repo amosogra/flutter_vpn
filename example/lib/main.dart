@@ -34,14 +34,16 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     FlutterVpn.prepare();
     FlutterVpn.onStateChanged.listen((s) => setState(() => state = s));
-    getCurrentState();
-    getCharonErrorState();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        colorSchemeSeed: const Color(0xff6750a4),
+        useMaterial3: true,
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter VPN'),
@@ -53,16 +55,19 @@ class _MyAppState extends State<MyApp> {
             Text('Current Charon State: $charonState'),
             TextFormField(
               controller: _addressController,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(icon: Icon(Icons.map_outlined)),
             ),
             TextFormField(
               controller: _usernameController,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 icon: Icon(Icons.person_outline),
               ),
             ),
             TextFormField(
               controller: _passwordController,
+              textInputAction: TextInputAction.done,
               obscureText: true,
               decoration: const InputDecoration(icon: Icon(Icons.lock_outline)),
             ),

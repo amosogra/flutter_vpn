@@ -148,6 +148,7 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     result.success(vpnStateService?.state?.ordinal)
             }
             "getCharonErrorState" -> result.success(vpnStateService?.errorState?.ordinal)
+            "checkState" -> VpnStateHandler?.checkState()
             "disconnect" -> vpnStateService?.disconnect()
             else -> result.notImplemented()
         }

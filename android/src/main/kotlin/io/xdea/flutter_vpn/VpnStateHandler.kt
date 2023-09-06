@@ -55,6 +55,13 @@ object VpnStateHandler : EventChannel.StreamHandler, VpnStateService.VpnStateLis
             eventSink?.success(vpnStateService?.state?.ordinal)
     }
 
+    public fun checkState() {
+        if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
+            handler.post { eventSink?.success(4) }
+        else
+            eventSink?.success(vpnStateService?.state?.ordinal)
+    }
+
     override fun onListen(p0: Any?, sink: EventChannel.EventSink) {
         eventSink = sink
     }
