@@ -36,7 +36,16 @@ public class FlutterVpnPlugin: NSObject, FlutterPlugin {
       break
     case "getCurrentState":
       VpnService.shared.getState(result: result)
-      break   
+      break
+    case "checkState":
+      VpnService.shared.checkState()
+      break
+    case "prepare":
+      VpnService.shared.prepare(result: result)
+      break
+    case "prepared":
+      VpnService.shared.prepare(result: result)
+      break 
     default:
       result(FlutterMethodNotImplemented)
     }

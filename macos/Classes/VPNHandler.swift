@@ -58,6 +58,19 @@ class VpnService {
         NotificationCenter.default.removeObserver(self)
     }
 
+    func prepare(result: FlutterResult){
+        vpnManager.loadFromPreferences { (error) -> Void in
+            guard error == nil else {
+                let msg = "VPN Prepare error: \(error!.localizedDescription)"
+                debugPrint(msg)
+                VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                result(false)
+                return;
+            }
+
+            result(true)
+        }
+    }
 
     // MARK: - Methods
     @available(iOS 9.0, *)
@@ -75,6 +88,7 @@ class VpnService {
                 let msg = "VPN Preferences error: \(error!.localizedDescription)"
                 debugPrint(msg)
                 VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                result(false)
                 return;
             }
 
@@ -122,27 +136,29 @@ class VpnService {
 
             self.vpnManager.saveToPreferences(completionHandler: { (error) -> Void in
                 guard error == nil else {
-                    let msg = "VPN Preferences error: \(error!.localizedDescription)"
+                    let msg = "VPN Preferences error:: \(error!.localizedDescription)"
                     debugPrint(msg)
                     VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                    result(false)
                     return;
                 }
 
                 self.vpnManager.loadFromPreferences(completionHandler: { error in
                     guard error == nil else {
-                        let msg = "VPN Preferences error: \(error!.localizedDescription)"
+                        let msg = "VPN Preferences error::: \(error!.localizedDescription)"
                         debugPrint(msg)
                         VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                        result(false)
                         return;
 
                     }
 
                     self.configurationSaved = true
                     self.startTunnel()
+                    result(true)
                 })
             })
         }
-        result(nil)
     }
 
     func startTunnel() {
@@ -252,8 +268,41 @@ class VpnService {
             break
 
         @unknown default:
-            debugPrint("Unknown switch statement: \(vpnStatus)")
+            debugPrint("Unknown switch statement:: \(vpnStatus)")
             break
         }
     }
+
+    func checkState() {
+        switch vpnStatus {
+        case .connected:
+            VPNStateHandler.updateState(FlutterVpnState.connected.rawValue)
+            break
+
+        case .disconnected:
+            VPNStateHandler.updateState(FlutterVpnState.disconnected.rawValue)
+            break
+
+        case .connecting:
+            VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
+            break
+
+        case .disconnecting:
+            VPNStateHandler.updateState(FlutterVpnState.disconnecting.rawValue)
+            break
+
+        case .invalid:
+            VPNStateHandler.updateState(FlutterVpnState.error.rawValue)
+            break
+
+        case .reasserting:
+            VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
+            break
+
+        @unknown default:
+            debugPrint("Unknown switch statement::: \(vpnStatus)")
+            break
+        }
+    }
+
 }
