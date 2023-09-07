@@ -58,7 +58,7 @@ class VpnService {
         NotificationCenter.default.removeObserver(self)
     }
 
-    func prepare(result: FlutterResult){
+    func prepare(result: @escaping FlutterResult){
         vpnManager.loadFromPreferences { (error) -> Void in
             guard error == nil else {
                 let msg = "VPN Prepare error: \(error!.localizedDescription)"
@@ -75,7 +75,7 @@ class VpnService {
     // MARK: - Methods
     @available(iOS 9.0, *)
     func connect(
-        result: FlutterResult,
+        result: @escaping FlutterResult,
         type: String,
         server: String,
         username: String,
