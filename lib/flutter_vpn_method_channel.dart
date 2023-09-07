@@ -65,7 +65,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// you should prepare again before reconnect.
   @override
   Future<bool> prepare() async {
-    if (!Platform.isAndroid) return true;
+   //if (!Platform.isAndroid) return true;
     if (await prepared) {
       checkState();
     }
@@ -89,7 +89,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// Check if vpn connection has been prepared. (Android only)
   @override
   Future<bool> get prepared async {
-    if (!Platform.isAndroid) return true;
+    //if (!Platform.isAndroid) return true;
     return (await methodChannel.invokeMethod<bool>('prepared'))!;
   }
 
@@ -116,7 +116,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? mtu,
     int? port,
   }) async {
-    if (Platform.isAndroid && !(await prepared)) {
+    if (!(await prepared)) {
       prepare();
     }
     await methodChannel.invokeMethod('connect', {
@@ -145,7 +145,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? mtu,
     int? port,
   }) async {
-    if (Platform.isAndroid && !(await prepared)) {
+    if (!(await prepared)) {
       prepare();
     }
     await methodChannel.invokeMethod('connect', {
