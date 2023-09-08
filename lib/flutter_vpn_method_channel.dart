@@ -156,19 +156,18 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? mtu,
     int? port,
   }) async {
-    if (!(await prepared)) {
-      prepare();
+    if ((await prepare())) {
+      await methodChannel.invokeMethod('connect', {
+        'Type': 'IKEv2',
+        'Server': server,
+        'Username': username,
+        'Password': password,
+        'Secret': '',
+        'Name': name ?? server,
+        if (mtu != null) 'mtu': mtu,
+        if (port != null) 'port': port,
+      });
     }
-    await methodChannel.invokeMethod('connect', {
-      'Type': 'IKEv2',
-      'Server': server,
-      'Username': username,
-      'Password': password,
-      'Secret': '',
-      'Name': name ?? server,
-      if (mtu != null) 'mtu': mtu,
-      if (port != null) 'port': port,
-    });
   }
 
   /// Connect to VPN. (IPSec)
@@ -185,18 +184,17 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? mtu,
     int? port,
   }) async {
-    if (!(await prepared)) {
-      prepare();
+    if ((await prepare())) {
+      await methodChannel.invokeMethod('connect', {
+        'Type': 'IPSec',
+        'Server': server,
+        'Username': username,
+        'Password': password,
+        'Secret': secret,
+        'Name': name ?? server,
+        if (mtu != null) 'mtu': mtu,
+        if (port != null) 'port': port,
+      });
     }
-    await methodChannel.invokeMethod('connect', {
-      'Type': 'IPSec',
-      'Server': server,
-      'Username': username,
-      'Password': password,
-      'Secret': secret,
-      'Name': name ?? server,
-      if (mtu != null) 'mtu': mtu,
-      if (port != null) 'port': port,
-    });
   }
 }
