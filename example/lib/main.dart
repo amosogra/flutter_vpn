@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    FlutterVpn.prepare();
+    FlutterVpn.prepare(platformAlert: alert);
     FlutterVpn.onStateChanged.listen((s) => setState(() => state = s));
     super.initState();
   }
