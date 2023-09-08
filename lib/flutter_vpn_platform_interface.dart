@@ -54,7 +54,7 @@ abstract class FlutterVpnPlatform extends PlatformInterface {
   /// For first connection it will show a dialog to ask for permission.
   /// When your connection was interrupted by another VPN connection,
   /// you should prepare again before reconnect.
-  Future<bool> prepare() async => throw UnimplementedError();
+  Future<bool> prepare({Future<bool> Function()? platformAlert}) async => throw UnimplementedError();
 
   /// Check if vpn connection has been prepared. (Android only)
   Future<bool> get prepared async => throw UnimplementedError();

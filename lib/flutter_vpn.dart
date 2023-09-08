@@ -32,7 +32,7 @@ class FlutterVpn {
   /// For first connection it will show a dialog to ask for permission.
   /// When your connection was interrupted by another VPN connection,
   /// you should prepare again before reconnect.
-  static Future<bool> prepare() => FlutterVpnPlatform.instance.prepare();
+  static Future<bool> prepare({Future<bool> Function()? platformAlert}) => FlutterVpnPlatform.instance.prepare(platformAlert: platformAlert);
 
   /// Check if vpn connection has been prepared. (Android only)
   static Future<bool> get prepared => FlutterVpnPlatform.instance.prepared;
