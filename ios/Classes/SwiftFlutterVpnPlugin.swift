@@ -15,7 +15,7 @@
 import Flutter
 import UIKit
 
-@available(iOS 9.0, *)
+//@available(iOS 9.0, *)
 public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_vpn", binaryMessenger: registrar.messenger())

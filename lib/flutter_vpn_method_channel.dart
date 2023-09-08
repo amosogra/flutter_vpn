@@ -58,35 +58,75 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     return CharonErrorState.values[state!];
   }
 
-  /// Prepare for vpn connection. (Android only)
+  /// Prepare for vpn connection.
   ///
   /// For first connection it will show a dialog to ask for permission.
   /// When your connection was interrupted by another VPN connection,
   /// you should prepare again before reconnect.
   @override
-  Future<bool> prepare() async {
-   //if (!Platform.isAndroid) return true;
+  Future<bool> prepare({Future<bool> Function()? platformAlert}) async {
+    //if (!Platform.isAndroid) return true;
     if (await prepared) {
       checkState();
+      return true;
+    } else {
+      return await (platformAlert?.call() ?? _platformAlert.call()).then((value) async {
+        switch (value) {
+          case false:
+            return false;
+          case true:
+            var isPrepared = await methodChannel.invokeMethod<bool>('prepare') ?? false;
+            if (!isPrepared) {
+              if (await _platformAlert()) {
+                return await prep();
+              } else {
+                return await prepare(platformAlert: platformAlert);
+              }
+            }
+            return true;
+          default:
+            return false;
+        }
+      });
     }
-    var isPrepared = await methodChannel.invokeMethod<bool>('prepare') ?? false;
-    if (!isPrepared) {
-      _platformAlert();
-      return false;
-    }
-    return isPrepared;
   }
 
-  Future<void> _platformAlert() async {
-    FlutterPlatformAlert.playAlertSound();
-    await FlutterPlatformAlert.showCustomAlert(
+  /* Future<bool> _platformAlert() async {
+    await FlutterPlatformAlert.playAlertSound();
+    return await FlutterPlatformAlert.showCustomAlert(
       windowTitle: 'VPN Permission Instruction',
       text: 'Please accept in order for the VPN to enable connection.',
       positiveButtonTitle: "Enable VPN",
-    ).then((value) => prepare());
+    ).then((value) async {
+      return await prep();
+    });
+  } */
+
+  Future<bool> _platformAlert() async {
+    await FlutterPlatformAlert.playAlertSound();
+    return await FlutterPlatformAlert.showCustomAlert(
+      windowTitle: 'VPN Permission Instruction',
+      text: 'Please accept in order for the VPN to enable connection.',
+      positiveButtonTitle: "Cancel",
+      negativeButtonTitle: "Continue",
+    ).then((value) async {
+      switch (value.name) {
+        case 'Cancel':
+          return false;
+        case 'Continue':
+          return true;
+        default:
+          return false;
+      }
+    });
   }
 
-  /// Check if vpn connection has been prepared. (Android only)
+  Future<bool> prep() async {
+    var isPrepared = await methodChannel.invokeMethod<bool>('prepare') ?? false;
+    return isPrepared;
+  }
+
+  /// Check if vpn connection has been prepared.
   @override
   Future<bool> get prepared async {
     //if (!Platform.isAndroid) return true;

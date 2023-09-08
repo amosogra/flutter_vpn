@@ -15,6 +15,7 @@
 import Foundation
 import NetworkExtension
 import Security
+import FlutterMacOS
 
 
 enum FlutterVpnState: Int {

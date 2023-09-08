@@ -13,6 +13,7 @@
  */
 
 import Foundation
+import FlutterMacOS
 
 class VPNStateHandler: FlutterStreamHandler {
     static var _sink: FlutterEventSink?

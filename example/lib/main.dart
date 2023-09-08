@@ -9,7 +9,9 @@
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 /// Lesser General Public License for more details.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_vpn/flutter_vpn.dart';
 import 'package:flutter_vpn/state.dart';
 
@@ -105,5 +107,62 @@ class _MyAppState extends State<MyApp> {
   getCurrentState() async {
     var newState = await FlutterVpn.currentState;
     setState(() => state = newState);
+  }
+
+  Widget adaptiveAction({required BuildContext context, required VoidCallback onPressed, required Widget child}) {
+    final ThemeData theme = Theme.of(context);
+    switch (theme.platform) {
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return TextButton(onPressed: onPressed, child: child);
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return CupertinoDialogAction(onPressed: onPressed, child: child);
+    }
+  }
+
+  Future<bool> alert() async {
+    var result = await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog.adaptive(
+        title: const Text('VPN Permission Instruction'),
+        content: const Text('Please accept in order for the VPN to enable connection.'),
+        actions: <Widget>[
+          adaptiveAction(
+            context: context,
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          adaptiveAction(
+            context: context,
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  Future<bool> platformAlert() async {
+    await FlutterPlatformAlert.playAlertSound();
+    return await FlutterPlatformAlert.showCustomAlert(
+      windowTitle: 'VPN Permission Instruction',
+      text: 'Please accept in order for the VPN to enable connection.',
+      positiveButtonTitle: "Cancel",
+      negativeButtonTitle: "Continue",
+    ).then((value) async {
+      switch (value.name) {
+        case 'Cancel':
+          return false;
+        case 'Continue':
+          return true;
+        default:
+          return false;
+      }
+    });
   }
 }
