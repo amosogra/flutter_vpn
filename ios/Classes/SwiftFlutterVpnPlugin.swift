@@ -26,7 +26,7 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
     stateChannel.setStreamHandler((VPNStateHandler() as! FlutterStreamHandler & NSObjectProtocol))
 
     channel.setMethodCallHandler {
-      (call: FlutterMethodCall, result: FlutterResult) -> Void in
+      (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
       if call.method == "connect" {
         let args = call.arguments! as! [NSString: NSString]
         VpnService.shared.connect(
