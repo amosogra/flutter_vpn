@@ -22,7 +22,7 @@ import org.strongswan.android.logic.VpnStateService
 /*
 	States for Flutter VPN plugin.
 	These states will be sent to event channel / getState.
-	DISCONNECTED = 0;
+	DISABLED = 0;
 	CONNECTING = 1;
 	CONNECTED = 2;
 	DISCONNECTING = 3;
@@ -48,19 +48,54 @@ object VpnStateHandler : EventChannel.StreamHandler, VpnStateService.VpnStateLis
     // Will be registered when service bound successfully.
     var vpnStateService: VpnStateService? = null
 
-    override fun stateChanged() {
-        if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
+    // Add these properties to track connection time
+    var connectTimestamp: Long? = null
+    var disconnectTimestamp: Long? = null
+
+   override fun stateChanged() {
+        when (vpnStateService?.state) {
+            VpnStateService.State.CONNECTED -> {
+                connectTimestamp = System.currentTimeMillis()
+                handler.post { eventSink?.success(2) }
+            }
+            VpnStateService.State.DISABLED -> { // Fixed enum reference
+                disconnectTimestamp = System.currentTimeMillis()
+                handler.post { eventSink?.success(0) }
+            }
+            VpnStateService.State.CONNECTING -> {
+                handler.post { eventSink?.success(1) }
+            }
+            VpnStateService.State.DISCONNECTING -> {
+                handler.post { eventSink?.success(3) }
+            }
+            null -> {/* Handle null state */}
+        }
+        // Existing error handling
+        if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR) 
             handler.post { eventSink?.success(4) }
-        else
+        else 
             eventSink?.success(vpnStateService?.state?.ordinal)
     }
 
+    // Add connection time tracking to the checkState() function
     public fun checkState() {
-        if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
-            handler.post { eventSink?.success(4) }
-        else
-            eventSink?.success(vpnStateService?.state?.ordinal)
+        when {
+            vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR -> {
+                handler.post { eventSink?.success(4) }
+            }
+            vpnStateService?.state == VpnStateService.State.CONNECTED -> {
+                handler.post { eventSink?.success(2) }
+            }
+            // ... other states ...
+        }
     }
+
+    // public fun checkState() {
+    //     if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
+    //         handler.post { eventSink?.success(4) }
+    //     else
+    //         eventSink?.success(vpnStateService?.state?.ordinal)
+    // }
 
     override fun onListen(p0: Any?, sink: EventChannel.EventSink) {
         eventSink = sink

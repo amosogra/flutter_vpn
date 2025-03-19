@@ -44,6 +44,14 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     return FlutterVpnState.values[state!];
   }
 
+  /// Get VPNConnectionDuration.
+  @override
+  Future<Duration?> get vpnConnectionDuration async {
+    final duration = await methodChannel.invokeMethod<double>('getVPNConnectionDuration');
+    //assert(duration != null, 'Received a null state from `getVPNConnectionDuration` call.');
+    return duration == null ? null : Duration(seconds: duration.toInt());
+  }
+
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.error] is received, details of error can be
   /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
@@ -84,8 +92,6 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
               }
             }
             return true;
-          default:
-            return false;
         }
       });
     }
@@ -148,7 +154,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// This will create a background VPN service.
   /// MTU is only available on android.
   @override
-  Future<void> connectIkev2EAP({
+  Future<bool> connectIkev2EAP({
     required String server,
     required String username,
     required String password,
@@ -157,7 +163,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? port,
   }) async {
     if ((await prepare())) {
-      await methodChannel.invokeMethod('connect', {
+      var connected = await methodChannel.invokeMethod<bool>('connect', {
         'Type': 'IKEv2',
         'Server': server,
         'Username': username,
@@ -167,6 +173,9 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
         if (mtu != null) 'mtu': mtu,
         if (port != null) 'port': port,
       });
+      return connected ?? false;
+    } else {
+      return false;
     }
   }
 
@@ -175,7 +184,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// This will create a background VPN service.
   /// Android implementation is not available.
   @override
-  Future<void> connectIPSec({
+  Future<bool> connectIPSec({
     required String server,
     required String username,
     required String password,
@@ -185,7 +194,7 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? port,
   }) async {
     if ((await prepare())) {
-      await methodChannel.invokeMethod('connect', {
+      var connected = await methodChannel.invokeMethod<bool>('connect', {
         'Type': 'IPSec',
         'Server': server,
         'Username': username,
@@ -195,6 +204,9 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
         if (mtu != null) 'mtu': mtu,
         if (port != null) 'port': port,
       });
+      return connected ?? false;
+    } else {
+      return false;
     }
   }
 }

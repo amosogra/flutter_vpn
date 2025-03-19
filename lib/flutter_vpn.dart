@@ -22,6 +22,9 @@ class FlutterVpn {
   /// Get current state.
   static Future<FlutterVpnState> get currentState => FlutterVpnPlatform.instance.currentState;
 
+  /// Get VPNConnectionDuration.
+  static Future<Duration?> get vpnConnectionDuration => FlutterVpnPlatform.instance.vpnConnectionDuration;
+
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.error] is received, details of error can be
   /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
@@ -44,7 +47,7 @@ class FlutterVpn {
   ///
   /// This will create a background VPN service.
   /// MTU is only available on android.
-  static Future<void> connectIkev2EAP({
+  static Future<bool> connectIkev2EAP({
     required String server,
     required String username,
     required String password,
@@ -65,7 +68,7 @@ class FlutterVpn {
   ///
   /// This will create a background VPN service.
   /// Android implementation is not available.
-  static Future<void> connectIPSec({
+  static Future<bool> connectIPSec({
     required String server,
     required String username,
     required String password,

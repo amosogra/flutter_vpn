@@ -58,7 +58,7 @@ class VpnService {
         NotificationCenter.default.removeObserver(self)
     }
 
-    func prepare(result: @escaping FlutterResult){
+    /* func prepare(result: @escaping FlutterResult){
         vpnManager.loadFromPreferences { (error) -> Void in
             guard error == nil else {
                 let msg = "VPN Prepare error: \(error!.localizedDescription)"
@@ -68,6 +68,25 @@ class VpnService {
                 return;
             }
 
+            result(true)
+        }
+    } */
+
+    func prepare(result: @escaping FlutterResult) {
+        vpnManager.loadFromPreferences { error in
+            // ✅ Improved error handling
+            if let error = error {
+                let errorCode = (error as NSError).code
+                let errorMsg = "VPN Prepare Error (Code \(errorCode)): \(error.localizedDescription)"
+                debugPrint(errorMsg)
+                VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: errorMsg)
+                //result(FlutterError(code: "VPN_PREPARE_FAILED", message: errorMsg, details: nil))
+                result(false)
+                return
+            }
+            
+            // ✅ Ensure configuration is reset before reuse
+            self.vpnManager.protocolConfiguration = nil
             result(true)
         }
     }
@@ -83,6 +102,15 @@ class VpnService {
         secret: String?,
         description: String?
     ) {
+        // ✅ Validate inputs
+        guard !server.isEmpty, !username.isEmpty, !password.isEmpty else {
+            let errorMsg = "Invalid VPN configuration: server, username, or password is empty"
+            debugPrint(errorMsg)
+            VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: errorMsg)
+            result(FlutterError(code: "INVALID_CONFIG", message: errorMsg, details: nil))
+            return
+        }
+
         vpnManager.loadFromPreferences { (error) -> Void in
             guard error == nil else {
                 let msg = "VPN Preferences error: \(error!.localizedDescription)"
@@ -211,6 +239,26 @@ class VpnService {
     func disconnect(result: FlutterResult) {
         vpnManager.connection.stopVPNTunnel()
         result(nil)
+    }
+
+    func getVPNConnectionDuration(result: @escaping FlutterResult) {
+        // 1. Get shared VPN manager instance
+        let vpnConnection = vpnManager.connection // Non-optional connection
+        
+        // 2. ✅ Fixed: Remove comma between conditions and use separate checks
+        guard vpnConnection.status == .connected else {
+            result(nil)
+            return
+        }
+        
+        guard let connectedDate = vpnConnection.connectedDate else {
+            result(nil)
+            return
+        }
+        
+        // 3. Calculate duration
+        let duration = Date().timeIntervalSince(connectedDate)
+        result(duration)
     }
 
     func getState(result: FlutterResult) {

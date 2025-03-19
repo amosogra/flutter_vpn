@@ -35,6 +35,9 @@ public class FlutterVpnPlugin: NSObject, FlutterPlugin {
     case "disconnect":
       VpnService.shared.disconnect(result: result)
       break
+    case "getVPNConnectionDuration":
+      VpnService.shared.getVPNConnectionDuration(result: result)
+      break
     case "getCurrentState":
       VpnService.shared.getState(result: result)
       break

@@ -97,6 +97,24 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         activityBinding = binding
     }
 
+    private fun handleConnectionDuration(result: Result) {
+        val state = vpnStateService?.state
+        val connectTime = VpnStateHandler?.connectTimestamp // Changed to correct property
+        
+        if (state == VpnStateService.State.CONNECTED && connectTime != null) {
+            // Line 106: Fix timestamp calculation
+            val durationSeconds = (System.currentTimeMillis() - connectTime).toDouble() / 1000.0
+            result.success(durationSeconds)
+        } else {
+            result.success(null)
+        }
+    }
+
+    // Line 165: Fix checkState reference
+    private fun checkState() { // Remove modifier if inside class
+        VpnStateHandler.checkState() // Call through companion object
+    }
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "prepare" -> {
@@ -148,7 +166,8 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     result.success(vpnStateService?.state?.ordinal)
             }
             "getCharonErrorState" -> result.success(vpnStateService?.errorState?.ordinal)
-            "checkState" -> VpnStateHandler?.checkState()
+            "getVPNConnectionDuration" -> handleConnectionDuration(result)
+            "checkState" -> checkState()
             "disconnect" -> vpnStateService?.disconnect()
             else -> result.notImplemented()
         }

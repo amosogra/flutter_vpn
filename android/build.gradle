@@ -1,31 +1,67 @@
-group 'io.xdea.flutter_vpn'
-version '1.0-SNAPSHOT'
-
+// BUILDSCRIPT MUST COME FIRST
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.9.22'
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath 'com.android.tools.build:gradle:8.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // For downloading prebuilt libs
         classpath 'de.undercouch:gradle-download-task:4.1.1'
     }
 }
 
-apply plugin: 'de.undercouch.download'
+// PLUGINS BLOCK AFTER BUILDSCRIPT
+plugins {
+    id "com.android.library"
+    id "kotlin-android"
+    id "de.undercouch.download" version "5.5.0"
+}
 
-// Download prebuilt native libs.
-task downloadNativeLibArchive(type: Download) {
+
+android {
+    namespace 'io.xdea.flutter_vpn'
+    compileSdkVersion 34
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        main.jniLibs.srcDir 'src/main/libs'
+    }
+
+    defaultConfig {
+        minSdkVersion 24
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    }
+
+    lint {
+        disable 'InvalidPackage'
+    }
+}
+
+tasks.register('downloadNativeLibArchive', Download) {
     src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.11.0/strongswan_libs_v5.9.5.zip'
     dest "$buildDir/native.zip"
 }
 
-task getPrebuiltNativeLibs(dependsOn: downloadNativeLibArchive, type: Copy) {
-    from zipTree("$buildDir/native.zip")
+tasks.register('getPrebuiltNativeLibs', Copy) {
+    dependsOn downloadNativeLibArchive
+    from zipTree(tasks.downloadNativeLibArchive.dest)
     into "src/main/libs"
 }
 
@@ -41,39 +77,5 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-    }
-}
-
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-
-android {
-    if (project.android.hasProperty("namespace")) {
-        namespace 'io.xdea.flutter_vpn'
-    }
-
-    compileSdkVersion 33
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-        main.jniLibs.srcDir 'src/main/libs'
-    }
-
-    defaultConfig {
-        minSdkVersion 24
-        consumerProguardFiles 'proguard-rules.pro'
-    }
-
-    dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     }
 }

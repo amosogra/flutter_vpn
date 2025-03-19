@@ -214,6 +214,26 @@ class VpnService {
         result(nil)
     }
 
+    func getVPNConnectionDuration(result: @escaping FlutterResult) {
+        // 1. Get shared VPN manager instance
+        let vpnConnection = vpnManager.connection // Non-optional connection
+        
+        // 2. ✅ Fixed: Remove comma between conditions and use separate checks
+        guard vpnConnection.status == .connected else {
+            result(nil)
+            return
+        }
+        
+        guard let connectedDate = vpnConnection.connectedDate else {
+            result(nil)
+            return
+        }
+        
+        // 3. Calculate duration
+        let duration = Date().timeIntervalSince(connectedDate)
+        result(duration)
+    }
+
     func getState(result: FlutterResult) {
         switch vpnStatus {
         case .connecting:

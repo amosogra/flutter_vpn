@@ -44,6 +44,9 @@ abstract class FlutterVpnPlatform extends PlatformInterface {
   /// Get current state.
   Future<FlutterVpnState> get currentState async => throw UnimplementedError();
 
+  /// Get VPNConnectionDuration.
+  Future<Duration?> get vpnConnectionDuration async => throw UnimplementedError();
+
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.error] is received, details of error can be
   /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
@@ -66,7 +69,7 @@ abstract class FlutterVpnPlatform extends PlatformInterface {
   ///
   /// This will create a background VPN service.
   /// MTU is only available on android.
-  Future<void> connectIkev2EAP({
+  Future<bool> connectIkev2EAP({
     required String server,
     required String username,
     required String password,
@@ -80,7 +83,7 @@ abstract class FlutterVpnPlatform extends PlatformInterface {
   ///
   /// This will create a background VPN service.
   /// Android implementation is not available.
-  Future<void> connectIPSec({
+  Future<bool> connectIPSec({
     required String server,
     required String username,
     required String password,

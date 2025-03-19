@@ -42,6 +42,8 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
         VpnService.shared.reconnect(result: result)
       } else if call.method == "disconnect" {
         VpnService.shared.disconnect(result: result)
+      } else if call.method == "getVPNConnectionDuration" {
+        VpnService.shared.getVPNConnectionDuration(result: result)
       } else if call.method == "getCurrentState" {
         VpnService.shared.getState(result: result)
       } else if call.method == "checkState" {

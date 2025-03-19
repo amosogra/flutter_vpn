@@ -9,6 +9,8 @@
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 /// Lesser General Public License for more details.
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
@@ -25,6 +27,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  var vpnConnectionDuration = '00:00:00';
   final _addressController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -36,14 +39,33 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     FlutterVpn.prepare(platformAlert: alert);
     FlutterVpn.onStateChanged.listen((s) => setState(() => state = s));
+
+    // Update UI every second
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      final duration = await FlutterVpn.vpnConnectionDuration;
+      var currentDuration = formatDuration(duration);
+      setState(() {
+        vpnConnectionDuration = currentDuration;
+      });
+    });
     super.initState();
+  }
+
+  static String formatDuration(Duration? duration) {
+    if (duration == null || duration.inSeconds <= 0) return '00:00:00';
+
+    return [
+      duration.inHours.toString().padLeft(2, '0'),
+      (duration.inMinutes.remainder(60)).toString().padLeft(2, '0'),
+      (duration.inSeconds.remainder(60)).toString().padLeft(2, '0')
+    ].join(':');
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xff6750a4),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: Scaffold(
@@ -53,6 +75,7 @@ class _MyAppState extends State<MyApp> {
         body: ListView(
           padding: const EdgeInsets.all(12),
           children: <Widget>[
+            Text('Connection Duration: $vpnConnectionDuration'),
             Text('Current State: $state'),
             Text('Current Charon State: $charonState'),
             TextFormField(
