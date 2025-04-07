@@ -1,4 +1,4 @@
-package com.example.vpnapp
+package com.floodcoding.vpnapp
 
 import io.flutter.embedding.android.FlutterActivity
 

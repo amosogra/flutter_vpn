@@ -13,6 +13,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_vpn/flutter_vpn.dart';
 import 'package:flutter_vpn/state.dart';
@@ -64,7 +65,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "VPN APP",
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple), useMaterial3: true),
+      builder: EasyLoading.init(),
       home: Scaffold(
         appBar: AppBar(title: const Text('Flutter VPN')),
         body: ListView(
@@ -94,7 +97,7 @@ class _MyAppState extends State<MyApp> {
                   password: _passwordController.text,
                 );
                 if (connected) {
-                  alert();
+                  EasyLoading.showSuccess("VPN Connected.");
                 }
               },
             ),
@@ -132,7 +135,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<bool> alert() async {
+  Future<bool> alert(BuildContext context) async {
     var result = await showAdaptiveDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog.adaptive(title: const Text('VPN Connected'), content: const Text('The connection was successful.')),

@@ -37,6 +37,7 @@ dependencies:
   flutter_platform_alert: ^0.7.0
   flutter_vpn:
     path: ../
+  flutter_easyloading: ^3.0.5
 
 dev_dependencies:
   flutter_test:
