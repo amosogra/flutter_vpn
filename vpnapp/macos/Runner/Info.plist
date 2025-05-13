@@ -28,5 +28,16 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to connect to the VPN.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to connect to the VPN.</string>
+	<key>NSVPNUsageDescription</key>
+	<string>This app uses VPN to secure your connection.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+	</dict>
 </dict>
 </plist>

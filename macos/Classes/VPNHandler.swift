@@ -84,6 +84,15 @@ class VpnService {
         secret: String?,
         description: String?
     ) {
+        // ✅ Validate inputs
+        guard !server.isEmpty, !username.isEmpty, !password.isEmpty else {
+            let errorMsg = "Invalid VPN configuration: server, username, or password is empty"
+            debugPrint(errorMsg)
+            VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: errorMsg)
+            result(FlutterError(code: "INVALID_CONFIG", message: errorMsg, details: nil))
+            return
+        }
+
         vpnManager.loadFromPreferences { (error) -> Void in
             guard error == nil else {
                 let msg = "VPN Preferences error: \(error!.localizedDescription)"
